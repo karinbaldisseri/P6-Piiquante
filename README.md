@@ -14,6 +14,7 @@ Projet n°6 du parcours Développeur Web d'OpenClassrooms : "Construisez une API
 
 ## 📦 Installation des packages et démarrez les serveurs
 
+BACK-END : 
 Depuis le terminal, positionnez-vous dans le dossier `backend`  et exécutez la commande :
 `npm install` 
 pour installer les packages requis pour le fonctionnement de l'API et ensuite exécutez la commande:
@@ -23,8 +24,9 @@ Le message suivant devrait s'afficher dans le terminal :
 `Listening on port 3000`
 Si le serveur s'exécute sur un autre port, celui-ci sera affiché dans la console à la place de port 3000. 
 
-
-Puis positinnez-vous dans le dossier frontend et exécutez la commande :
+FRONT-END :
+Lien github de la partie Front : https://github.com/OpenClassrooms-Student-Center/Web-Developer-P6 à télécharger afin d'accéder à l'interface de l'API.
+Ensuite, positinnez-vous dans le dossier frontend et exécutez la commande :
 `npm install`
 pour installer les packages requis pour le fonctionnement du frontend et ensuite exécutez la commande:
 `npm run start`

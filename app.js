@@ -3,38 +3,49 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const userRoutes = require('./routes/user');
 const saucesRoutes = require('./routes/sauce');
+const limiter = require('./middleware/rate-limiter');
 
 const app = express();
 
 
-//Database connect
+//DATABASE CONNECTION with environment variable
 mongoose.connect(`${process.env.DB_CONNECTION_STRING}`)
     .then(() => console.log('Connexion à MongoDB réussie !'))
     .catch((err) => console.log('connexion à MongoDB échouée !', err)); 
+    
 
 // MIDDLEWARES
 
-// Mettre à disposition le corps/body des requêtes de type Json
+// Express.json - Parses incoming JSON requests and puts the parsed data in req.body. (instead of Body-parse)
 app.use(express.json());
-// Sécurité CORS - permettre au front et au back (qui ont des origines différentes)
-// de communiquer / définit comment les serveurs et navigateurs interagissent
-// les headers permettent des requêtes cross-origin (et empêchent les erreurs CORS) 
+// Helmet security - Express.js security with HTTP headers
+app.use(helmet());
+// Express-rate-limit - Protects from brute force type attacks 
+app.use(limiter);
+// Mongo-sanitize - Helps against query selector injections
+app.use(mongoSanitize());
+// Sécurité CORS (Cross-origin resource sharing) -  Prevents from Cors attacks
 app.use(cors());
-
+// add specific headers to allow controlled acces between different origins / servers
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }); 
 
-//Routes
+
+// ROUTES
 app.use('/api/auth', userRoutes);
 app.use('/api/sauces', saucesRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
-// app.use(serveStatic(path.join(__dirname, "public"))) ben Mrejen 20 1:30 ???
 
+
+// EXPORTS
 module.exports = app;

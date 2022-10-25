@@ -2,84 +2,90 @@ const Sauce = require('../models/Sauce');
 const fs = require('fs');
 
 
-// CREATE - Créer une nouvelle sauce -> POST
-exports.createSauce = (req, res, next) => {
+// CREATE new sauce -> POST
+exports.createSauce = (req, res) => {
     const sauceData = JSON.parse(req.body.sauce);
-    if (req.body.sauce != null) { // if (req.body sauce) 
+    if (req.body.sauce != null) { 
+        // Check if token is valid
         if (sauceData.userId != req.auth.userId) {
             res.status(403).json({ error: 'Unauthorized request' });
         } else {
             const sauce = new Sauce({
-            // opérateur spread qui récupère les données de la requête
             ...sauceData,
             imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
             });
             sauce.save()
-                .then(() => { res.status(201).json({ message: 'Sauce enregistrée !' }) })
-                .catch(error => { res.status(400).json({ error }) });
+                .then(() => res.status(201).json({ message: 'Sauce created !' }))
+                .catch(error => res.status(500).json({ error : 'Internal server error' }));
         }
     } else {
-        return res.status(400).json({ message : 'Bad request !'})
+        return res.status(400).json({ message : 'Bad request'})
     }
 };
 
 
-// UPDATE - Modifier une sauce -> PUT
-exports.modifySauce = (req, res, next) => {
+// UPDATE sauce -> PUT
+exports.modifySauce = (req, res) => {
+    // Check if image file in request
     const sauceData = req.file ? {
         ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
-    Sauce.findOne({ _id: req.params.id })
+    Sauce.findOne({ _id: req.params.id, userId: req.auth.userId})
         .then((sauce) => {
-            if (sauce.userId != req.auth.userId) {
-                res.status(403).json({ error: 'Unauthorized request' });
+             // If sauce can't be found in DB
+            if (!sauce) {
+                res.status(403).json({ error: 'Unauthorized request !' });
             } else {
-                // Récupérer le nom du fichier image
-                const filename = sauce.imageUrl.split('/images/')[1];
-                // Supprimer l'image du dossier images
-                fs.unlink(`images/${filename}`, () => {
-                    Sauce.updateOne({ _id: req.params.id }, { ...sauceData, _id: req.params.id })
-                        .then(() => res.status(200).json({ message: 'Sauce modifiée !' }))
-                        .catch(error => res.status(401).json({ error }));
-                });
+                // If image to update - delete old image file
+                if (sauceData.imageUrl) {
+                    const filename = sauce.imageUrl.split('/images/')[1];
+                    fs.unlink(`images/${filename}`, () => { });
+                }
+                    Sauce.updateOne({ _id: req.params.id ,userId: req.auth.userId }, { ...sauceData })
+                        .then(() => res.status(200).json({ message: 'Sauce updated !' }))
+                        .catch(error => res.status(500).json({ error : 'Internal server error' }));
             }
         })
-        .catch(error => { res.status(400).json({ error }) });
+        .catch(error => { res.status(500).json({ error : 'Internal server error' })});
 };
 
-// DELETE - Supprimer une sauce -> DELETE
-exports.deleteSauce = (req, res, next) => {
-    Sauce.findOne({ _id: req.params.id })
+// DELETE sauce -> DELETE
+exports.deleteSauce = (req, res) => {
+    Sauce.findOne({ _id: req.params.id , userId: req.auth.userId})
         .then(sauce => {
-            if (sauce.userId != req.auth.userId) {
-                res.status(403).json({ error: 'Unauthorized request' });
+            // If sauce can't be found in DB
+            if (!sauce) {
+                res.status(403).json({ error: 'Unauthorized request !' });
             } else {
-                // Récupérer le nom du fichier image
                 const filename = sauce.imageUrl.split('/images/')[1]; 
-                // Supprimer l'image du dossier images
+                // Delete image in directory
                 fs.unlink(`images/${filename}`, () => {
-                    Sauce.deleteOne({ _id: req.params.id })
-                        .then(() =>  res.status(200).json({ message: 'Sauce supprimée !' }))
-                        .catch(error => res.status(401).json({ error }));
+                    Sauce.deleteOne({ _id: req.params.id, userId: req.auth.userId })
+                        .then(() =>  res.status(200).json({ message: 'Sauce deleted !' }))
+                        .catch(error => res.status(500).json({ error : 'Internal server error' }));
                 });
             }
         })
-        .catch(error => res.status(404).json({ error }));
+        .catch(error => res.status(500).json({ error : 'Internal server error' }));
 };
 
-// READ - Lire/Récupérer une sauce -> GET
-exports.getOneSauce = (req, res, next) => {
+// READ - Get single sauce -> GET
+exports.getOneSauce = (req, res) => {
     const id = req.params.id;
-    // pour récupérer une seule sauce bien spécifique
     Sauce.findById(id)
-        .then(sauce => res.status(200).json(sauce))
-        .catch(error => res.status(404).json({ error }));
+        .then(sauce => {
+            if (!sauce) {
+               return res.status(404).json({ error : 'Resource not found'})
+            }
+            res.status(200).json(sauce)
+        })
+        .catch(error => res.status(500).json({ error : 'Internal server error'}));
 };
 
-// READ - Lire/Récupérer toutes les sauces -> GET
-exports.getAllSauces = (req, res, next) => {
+// READ - Get all sauces -> GET
+exports.getAllSauces = (req, res) => {
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
-        .catch(error => res.status(404).json({ error }));
+        .catch(error => res.status(500).json({ error : 'Internal server error' }));
 };

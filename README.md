@@ -1,8 +1,8 @@
 # P6-Piiquante - Hot Takes
 
-Projet n°6 du parcours Développeur Web d'OpenClassrooms : Construisez une API sécurisée pour une application d'avis gastronomiques.
+Projet n°6 du parcours Développeur Web d'OpenClassrooms : "Construisez une API sécurisée pour une application d'avis gastronomiques."
 
-    Il s'agit d'implémenter l'API du site "Piiquante/ Hot Takes" avec une base de donnée NoSQL. Les données utilisateurs doivent respectées le RGPD et l'API doit être sécurisée en respectant les préconisation de l'OWASP.
+    Il s'agit d'implémenter l'API du site "Piiquante - Hot Takes" avec une base de donnée NoSQL - Mongo Database. Les données utilisateurs doivent respecter le RGPD et l'API doit être sécurisée en respectant les préconisations de l'OWASP.
 
 
 ## 📚 Technologies utilisées
@@ -33,11 +33,11 @@ pour démarrer le serveur du frontend -- Port 4200
 
 ## 🔐 Variables d'environnement 
 
-Dans le dossier backend, créez le fichier .env et déclarez les variables nécessaires selon le dossier .env.example pour entre connecter une base de données à l'API (ou changez .env.example en .env)
+Dans le dossier backend, créez un fichier ".env" (ou changez ".env.example" en ".env") et déclarez les variables nécessaires selon les instructions du fichier ".env.example" pour  connecter une base de données à l'API.
 
 ## ⚙️ Connection à Mongo DB
 
-Suite aux déclarations des variables dans .env,  la connexion à la base de donnée s'affiche sur la console quand le serveur démarre : Connexion à MongoDB réussie ! 
+Suite aux déclarations des variables dans le fichier .env, la connexion à la base de donnée s'affiche sur la console quand le serveur démarre : Connexion à MongoDB réussie ! 
 
 
 

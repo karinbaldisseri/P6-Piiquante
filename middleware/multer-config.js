@@ -1,4 +1,5 @@
 const multer = require('multer');
+const crypto = require('crypto')
 
 const MIME_TYPES = {
     'image/jpg': 'jpg',
@@ -6,18 +7,20 @@ const MIME_TYPES = {
     'image/png': 'png'
 };
 
-// objet de configuration de multer
+
+// MULTER CONFIGURATION
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
         callback(null, 'images')
     },
     filename: (req, file, callback) => {
-        // générer le nouveau nom du fichier - image
+        // Generate new image filename
         const name = file.originalname.split(' ').join('_');
         const extension = MIME_TYPES[file.mimetype];
-        // pour rendre chaque nom de fichier unique
-        callback(null, name + Date.now() + '.' + extension);
+        callback(null, name + crypto.randomUUID() + '.' + extension);
     }
 });
 
+
+// EXPORTS
 module.exports = multer({ storage }).single('image');
